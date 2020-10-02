@@ -64,11 +64,11 @@ sits_labels(samples_mt_4bands)
 
 In many cases, it is useful to relabel the data set. For example, there may be situations when one wants to use a smaller set of labels, since samples in one label on the original set may not be distinguishable from samples with other labels. We then could use `sits_relabel()`, which requires a conversion list (for details, see `?sits_relabel`).
 
-Given that we have used the tibble data format for the metadata and and the embedded time series, one can use the functions from `dplyr`, `tidyr` and `purrr` packages of the `tidyverse` [@Wickham2017] to process the data. For example, the following code uses `sits_select_bands()` to get a subset of the sample data set with two bands (NDVI and EVI) and then uses the `dplyr::filter()` to select the samples labelled either as "Cerrado" or "Pasture". 
+Given that we have used the tibble data format for the metadata and and the embedded time series, one can use the functions from `dplyr`, `tidyr` and `purrr` packages of the `tidyverse` [@Wickham2017] to process the data. For example, the following code uses `sits_select()` to get a subset of the sample data set with two bands (NDVI and EVI) and then uses the `dplyr::filter()` to select the samples labelled either as "Cerrado" or "Pasture". 
 
 ```{r}
 # select NDVI band
-samples_ndvi.tb <- sits_select_bands(samples_mt_4bands, ndvi)
+samples_ndvi.tb <- sits_select(samples_mt_4bands, "NDVI")
 # select only samples with Cerrado label
 samples_cerrado.tb <-
     dplyr::filter(samples_ndvi.tb, label == "Cerrado")
@@ -123,7 +123,7 @@ A common situation is when users have samples available as shapefiles in point f
 
 ```{r, warning = FALSE, message = FALSE}
 # define the input shapefile (consisting of POLYGONS)
-shp_file <- system.file("extdata/shapefiles/parcel_agriculture.shp", 
+shp_file <- system.file("extdata/shapefiles/agriculture/parcel_agriculture.shp", 
                         package = "sits")
 # set the start and end dates 
 start_date <- lubridate::ymd("2012-08-29")
@@ -154,10 +154,11 @@ ndvi_file <- system.file("extdata/raster/mod13q1/sinop-crop-ndvi.tif",
                          package = "sits")
 
 # Obtain the associated timeline
-data("timeline_2000_2017", package = "sits")
+time_file <- system.file("extdata/Sinop", "timeline_2014.txt", package = "inSitu")
+timeline_2013_2014 <- scan(time_file, character())
 
 # create a raster metadata file based on the information about the files
-raster_cube <- sits_cube(type = "BRICK",
+raster_cube <- sits_cube(type = "RASTER",
                          name = "Sinop", 
                          satellite = "TERRA",
                          sensor = "MODIS",
@@ -215,7 +216,7 @@ cube to the database.
 files <- c(system.file("extdata/raster/mod13q1/sinop-crop-ndvi.tif",
                            package = "sits"))
 # create a raster cube file based on the information about the files
-raster.tb <- sits_cube(type = "BRICK", name  = "Sinop-crop",
+raster.tb <- sits_cube(type = "RASTER", name  = "Sinop-crop",
                        satellite = "TERRA", sensor = "MODIS",
                        timeline = timeline_modis_392, bands = "ndvi",
                        files = files)

@@ -36,6 +36,7 @@ vignette: |
 devtools::load_all(".")
 library(sits)
 library(dtwclust)
+library(inSitu)
 require(sits)
 ```
 
@@ -62,16 +63,17 @@ ndvi_file <- system.file("extdata/raster/mod13q1/sinop-crop-ndvi.tif",
                          package = "sits")
 
 # Obtain the associated timeline
-timeline <- data("timeline_2000_2017")
+time_file <- system.file("extdata/Sinop", "timeline_2014.txt", package = "inSitu")
+timeline <- scan(time_file, character())
 
 # create a raster metadata file based on the information about the files
-raster_cube <- sits_cube(type = "BRICK",
-                         name = "Sinop", 
-                         satellite = "TERRA",
-                         sensor = "MODIS",
-                         timeline = timeline,
-                         bands = c("ndvi"), 
-                         files = c(ndvi_file))
+raster_cube <- sits_cube(type = "RASTER",
+                   satellite = "TERRA",
+                   sensor  = "MODIS",
+                   name = "Sinop",
+                   timeline = timeline_2013_2014,
+                   bands = c("NDVI"),
+                   files = ndvi_file)
 
 # get information on the data cube 
 raster_cube %>% dplyr::select(type, URL, satellite, sensor)
@@ -142,8 +144,8 @@ devtools::install_github("e-sensing/inSitu")
 
 # Retrieve the set of samples for the Mato Grosso region 
 # Select the data for classification
-mato_grosso_samples <- inSitu::br_mt_1_8K_9classes_6bands
-mato_grosso_2bands  <- sits_select_bands(mato_grosso_samples, ndvi, evi)
+mato_grosso_samples <- br_mt_1_8K_9classes_6bands
+mato_grosso_2bands  <- sits_select(mato_grosso_samples, c("ndvi", "evi"))
 
 # build the classification model
 rfor_model <- sits_train(mato_grosso_2bands, ml_method = sits_rfor(num_trees = 2000))
@@ -158,7 +160,7 @@ time_file <- system.file("extdata/Sinop", "timeline_2014.txt", package = "inSitu
 timeline_2013_2014 <- scan(time_file, character())
 
 # create a raster metadata file based on the information about the files
-sinop <- sits_cube(type = "BRICK",
+sinop <- sits_cube(type = "RASTER",
                    satellite = "TERRA",
                    sensor    = "MODIS",
                    name = "Sinop",
@@ -173,7 +175,7 @@ sinop_probs <- sits_classify(sinop, ml_model = rfor_model, memsize = 2, multicor
 # label the probability file 
 # (by default selecting the class with higher probability)
 sinop_label <- sits_label_classification(sinop_probs)
-plot(sinop_label, title = "Sinop-label")
+#plot(sinop_label, title = "Sinop-label")
 ```
 
 # Smoothing of raster data after classification
@@ -190,7 +192,7 @@ sinop_bayes <- sits_label_classification(sinop_probs,
                                          smoothing = "bayesian")
 
 # plot the image
-plot(sinop_bayes, time = 1, title = "Sinop-smooth")
+#plot(sinop_bayes, time = 1, title = "Sinop-smooth")
 ```
 
 # Final remarks

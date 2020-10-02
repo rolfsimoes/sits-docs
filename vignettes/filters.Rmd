@@ -77,7 +77,7 @@ In general, the Savitzky-Golay filter produces smoother results for a larger val
 
 ```{r, fig.align="center", fig.height=3.1, fig.width=5, fig.cap="Savitzky-Golay filter applied on a one-year NDVI time series."}
 # Take NDVI band of the first sample data set
-point.tb <- sits_select_bands(prodes_226_064[1,], ndvi)
+point.tb <- sits_select(prodes_226_064[1,], "ndvi")
 # apply Savitzky–Golay filter
 point_sg.tb <- sits_filter(point.tb, filter = sits_sgolay())
 # plot the series
@@ -151,7 +151,7 @@ In the following example we can see an application of `sits_envelope()` function
 
 ```{r, fig.align="center", fig.height=3.1, fig.width=5, fig.cap="Envelope filter applied on one-year NDVI time series. The examples uses two morfological filters: opening filtration (~.OF) and closing filtration (~.CF)."}
 # Take the NDVI band of the first sample data set
-point.tb <- sits_select_bands(prodes_226_064[1,], ndvi)
+point.tb <- sits_select(prodes_226_064[1,], "ndvi")
 # apply envelope filter (remove downward and upward noises)
 point_env1.tb <- sits_filter(point.tb, 
                              sits_envelope(operations = "ULLULUUL", 
@@ -174,7 +174,7 @@ The parameters of the ARIMA model can be set by the user. Please see `arima` for
 
 ```{r, fig.align="center", fig.height=3.1, fig.width=5, fig.cap="ARIMA cloud filter applied on one-year NDVI time series"}
 # Take the NDVI band of the first sample data set
-point <- sits_select_bands(prodes_226_064[1,], ndvi)
+point <- sits_select(prodes_226_064[1,], "ndvi")
 # apply ARIMA filter
 point_cf <- sits_filter(point, sits_ndvi_arima())
 # plot the series

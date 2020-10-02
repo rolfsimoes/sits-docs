@@ -19,9 +19,49 @@ License: GPL-2 | file LICENSE
 ByteCompile: true
 LazyData: true
 Imports:
-    sits
+    dplyr,
+    lubridate,
+    sits,
+    inSitu
 Suggests:
+    aws.s3,
+    caret,
+    DBI,
+    dendextend,
+    devtools,
+    dtwclust,
+    dtwSat,
+    e1071,
+    flexclust,
+    gdalUtils,
     knitr,
-    rmarkdown
+    kohonen,
+    MASS,
+    mapview,
+    methods,
+    mgcv,
+    nnet,
+    openxlsx,
+    plyr,
+    proto,
+    ptw,
+    reticulate (>= 1.16),
+    ranger,
+    Rcpp,
+    RCurl,
+    rmarkdown,
+    RSQLite,
+    signal,
+    sp,
+    stars,
+    stringr,
+    testthat,
+    xgboost,
+    xml2,
+    wtss,
+    zoo
+Remotes: 
+    e-sensing/wtss,
+    e-sensing/inSitu
 VignetteBuilder: knitr
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
