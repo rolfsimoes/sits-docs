@@ -192,7 +192,7 @@ new_samples <- sits_som_clean_samples(som_cluster,
 # find out how many samples are evaluated as "clean" or "analyze"
 new_samples %>% 
   dplyr::group_by(eval) %>% 
-  dplyr::summarise(count = dplyr::n())
+  dplyr::summarise(count = dplyr::n(), .groups = "drop")
 ```
 
 # Comparing Global Accuracy of Original and Clean Samples
@@ -224,7 +224,7 @@ be visualized.
 # evaluate the misture in the SOM clusters
 cluster_mixture <- sits_som_evaluate_cluster(som_cluster)
 # plot the mixture information.
-plot(cluster_purity)
+plot(cluster_mixture)
 ```
 
 # Conclusion

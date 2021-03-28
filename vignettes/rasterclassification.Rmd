@@ -146,6 +146,7 @@ sinop <- sits_cube(source = "LOCAL",
                    name = "Sinop",
                    data_dir = data_dir,
                    parse_info = c("X1", "X2", "band", "date"))
+
 # classify the raster image
 sinop_probs <- sits_classify(sinop, ml_model = xgb_model, 
                              memsize = 4, multicores = 1)

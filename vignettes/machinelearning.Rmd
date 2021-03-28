@@ -115,7 +115,9 @@ rfor_model <- sits_train(samples_matogrosso_mod13q1, sits_rfor())
 point_mt_4bands <- sits_select(point_mt_6bands, bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_whittaker(lambda = 0.2, bands_suffix = "") %>% 
-    sits_classify(rfor_model) %>% 
+    sits_classify(rfor_model)
+# plot classification
+class.tb %>% 
     plot(bands = c("NDVI", "EVI"))
 ```
 

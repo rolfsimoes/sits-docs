@@ -33,8 +33,8 @@ vignette: |
 ---
 
 ```{r, include = FALSE}
-devtools::load_all(".")
 library(sits)
+library(sitsdata)
 library(sits.docs)
 ```
 
@@ -54,8 +54,6 @@ A natural question that arises is: *how good is this estimation?* According to @
 prediction.mx <- sits_kfold_validate(cerrado_2classes, 
                                      folds = 5, 
                                      ml_method = sits_rfor())
-# prints the output confusion matrix and statistics 
-sits_conf_matrix(prediction.mx)
 ```
 
 # Comparing different validation methods
@@ -65,7 +63,7 @@ One useful function in SITS is the capacity to compare different validation meth
 ```{r}
 
 # Retrieve the set of samples for the Mato Grosso region (provided by EMBRAPA)
-data("samples_mt_4bands")
+data("samples_matogrosso_mod13q1")
 
 # create a list to store the results
 results <- list()
@@ -73,40 +71,31 @@ results <- list()
 # adjust the multicores parameters to suit your machine
 
 ## SVM model
-conf_svm.tb <- sits_kfold_validate(samples_mt_4bands,
-                                   folds = 5,
-                                   multicores = 2,
-                            ml_method = sits_svm(kernel = "radial", cost = 10))
-
-print("== Confusion Matrix = SVM =======================")
-conf_svm.mx <- sits_conf_matrix(conf_svm.tb)
+conf_svm.tb <- sits_kfold_validate(
+    samples_matogrosso_mod13q1,
+    folds = 5,
+    multicores = 2,
+    ml_method = sits_svm(kernel = "radial", cost = 10))
 
 # Give a name to the SVM model
-conf_svm.mx$name <- "svm_10"
+conf_svm.tb$name <- "svm_10"
 
 # store the result
-results[[length(results) + 1]] <- conf_svm.mx
+results[[length(results) + 1]] <- conf_svm.tb
 
 
-# =============== Random Forest ==============================
-
-conf_rfor.tb <- sits_kfold_validate(samples_mt_4bands,
-                                    folds = 5,
-                                    multicores = 1,
-                                    ml_method = sits_rfor(num_trees = 500))
-print("== Confusion Matrix = RFOR =======================")
-conf_rfor.mx <- sits_conf_matrix(conf_rfor.tb)
+conf_rfor.tb <- sits_kfold_validate(
+    samples_matogrosso_mod13q1,
+    folds = 5,
+    multicores = 1,
+    ml_method = sits_rfor(num_trees = 500))
 
 # Give a name to the model
-conf_rfor.mx$name <- "rfor_500"
+conf_rfor.tb$name <- "rfor_500"
 
 # store the results in a list
-results[[length(results) + 1]] <- conf_rfor.mx
-
-# choose the output directory
-WD = getwd()
+results[[length(results) + 1]] <- conf_rfor.tb
 
 # Save to an XLS file
 sits_to_xlsx(results, file = "./accuracy_mt_ml.xlsx")
 ````
-

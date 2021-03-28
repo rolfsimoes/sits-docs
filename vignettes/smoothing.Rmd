@@ -182,6 +182,8 @@ plot(raster_class)
 The result is shown below.
 ```{r, out.width = "90%", out.height = "90%", echo = FALSE, fig.align="center", fig.cap="Classified image post-processed with Bayesian smoothing. The image coordinates ({\\it meters}) shown at vertical and horizontal axis are in MODIS sinusoidal projection."}
 
-knitr::include_graphics(system.file("extdata/markdown/figures", 
-                                    "sinop_bayes.png", package = "sits"))
+knitr::include_graphics(
+  system.file("extdata/markdown/figures/sinop_bayes.png", 
+  package = "sits.docs")
+)
 ```
