@@ -12,56 +12,17 @@ Authors@R: c(person('Rolf', 'Simoes', role = c('aut'), email = 'rolf.simoes@inpe
 Maintainer: Gilberto Camara <gilberto.camara@inpe.br>
 Description: Documentation on the SITS package, a set of tools for analysis of satellite image time series.
 Encoding: UTF-8
-Depends: R (>= 4.0.0)
+Depends: R (>= 3.5.0)
 URL: https://github.com/e-sensing/sits-docs/
 BugReports: https://github.com/e-sensing/sits-docs/issues
 License: GPL-2 | file LICENSE
 ByteCompile: true
 LazyData: true
 Imports:
-    dplyr,
-    lubridate,
     sits,
-    inSitu
+    dplyr
 Suggests:
-    aws.s3,
-    caret,
-    DBI,
-    dendextend,
-    devtools,
-    dtwclust,
-    dtwSat,
-    e1071,
-    flexclust,
-    gdalUtils,
-    knitr,
-    kohonen,
-    MASS,
-    mapview,
-    methods,
-    mgcv,
-    nnet,
-    openxlsx,
-    plyr,
-    proto,
-    ptw,
-    reticulate (>= 1.16),
-    ranger,
-    Rcpp,
-    RCurl,
-    rmarkdown,
-    RSQLite,
-    signal,
-    sp,
-    stars,
-    stringr,
-    testthat,
-    xgboost,
-    xml2,
-    wtss,
-    zoo
 Remotes: 
-    e-sensing/wtss,
-    e-sensing/inSitu
+    e-sensing/sitsdata
 VignetteBuilder: knitr
 RoxygenNote: 7.1.1

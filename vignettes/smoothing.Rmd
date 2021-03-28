@@ -138,54 +138,45 @@ Doing post-processing using Bayesian smoothing in SITS is straightforward. The r
 ```{r, include=FALSE}
 library(sits)
 library(dtwclust)
+library(sitsdata)
 ```
 
 
-```{r, eval = FALSE}
-# install the "inSitu" package
-devtools::install_github("e-sensing/inSitu")
-library(inSitu)
+```{r}
 # Retrieve the data for the Mato Grosso state
 
 # select the bands "ndvi", "evi"
-samples_2bands <- sits_select_bands(samples_mt_4bands, ndvi, evi)
+samples_2bands <- sits_select(samples_matogrosso_mod13q1, bands = c("NDVI", "EVI"))
 
 #select a rfor model
-rfor_model <- sits_train(samples_2bands, ml_method = sits_rfor())
+xgb_model <- sits_train(samples_2bands, ml_method = sits_xgboost())
 
-# Classify a raster file with 23 instances for one year
-# select the bands "ndvi", "evi" from the "inSitu" package
-evi_file <- system.file("extdata/Sinop", 
-                        "Sinop_evi_2014.tif", 
-                        package = "inSitu")
-ndvi_file <- system.file("extdata/Sinop", 
-                         "Sinop_ndvi_2014.tif", 
-                         package = "inSitu")
-files <- c(ndvi_file, evi_file)
+data_dir <- system.file("extdata/sinop", package = "sitsdata")
 
-# define the timeline for the files
-time_file <- system.file("extdata/Sinop", 
-                         "timeline_2014.txt", 
-                         package = "inSitu")
-timeline_2013_2014 <- scan(time_file, character())
-
-# create a data cube based on the information about the files
-raster_cube <- sits_cube(name = "Sinop", timeline = timeline_2013_2014,
-                         bands = c("ndvi", "evi"), files = files)
+# create a raster metadata file based on the information about the files
+raster_cube <- sits_cube(source = "LOCAL",
+                   satellite = "TERRA",
+                   sensor  = "MODIS",
+                   name = "Sinop",
+                   data_dir = data_dir,
+                   parse_info = c("X1", "X2", "band", "date"),
+)
 
 # classify the raster image and generate a probability file
 raster_probs <- sits_classify(raster_cube, ml_model = xgb_model, 
                               memsize = 4, multicores = 2)
 
-# label the probability (no smoothing applied by default)
-raster_class <- sits_label_classification(raster_probs)
-
 # smooth the result with a bayesian filter
-raster_class_bayes <- sits_label_classification(raster_probs, 
-                                                smoothing = "bayesian")
+raster_probs_bayes <- sits_smooth(raster_probs)
 
+# label the smoothed probability images
+raster_class <- sits_label_classification(raster_probs_bayes)
+```
+
+
+```{r, eval = FALSE}
 # plot the smoothened image
-plot(raster_class_bayes, time = 1, title = "Sinop-smooth")
+plot(raster_class)
 ```
 
 The result is shown below.

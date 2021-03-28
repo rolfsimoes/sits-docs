@@ -36,7 +36,7 @@ vignette: |
 ```{r, include = FALSE}
 devtools::load_all(".")
 library(sits)
-library(sits.docs)
+library(sitsdata)
 ```
 # Machine learning classification
 
@@ -60,7 +60,7 @@ SITS provides support for the classification of both individual time series as w
 
 # Data used in the machine learning examples
 
-For the machine learning examples, we use a data set containing a sits tibble with time series samples from Brazilian Mato Grosso State (Amazon and Cerrado biomes). The samples are from many sources. It has 9 classes ("Cerrado", "Fallow_Cotton", "Forest", "Millet_Cotton", "Pasture", "Soy_Corn", "Soy_Cotton", "Soy_Fallow", "Soy_Millet"). Each time series comprehends 12 months (23 data points) from MOD13Q1 product, and has 6 bands ("ndvi", "evi", "blue", "red", "nir", "mir". The dataset was used in the paper "Big Earth observation time series analysis for monitoring Brazilian agriculture" [@Picoli2018], and is available in the R package "inSitu", which is downloadable from the website associated to the "e-sensing" project. The examples below use two out of six bands ("ndvi", "evi") for training and classification. In practice, we suggest that users include additionally at least the "nir" and "mir" bands.
+For the machine learning examples, we use a data set containing a sits tibble with time series samples from Brazilian Mato Grosso State (Amazon and Cerrado biomes). The samples are from many sources. It has 9 classes ("Cerrado", "Fallow_Cotton", "Forest", "Millet_Cotton", "Pasture", "Soy_Corn", "Soy_Cotton", "Soy_Fallow", "Soy_Millet"). Each time series comprehends 12 months (23 data points) from MOD13Q1 product, and has 6 bands ("ndvi", "evi", "blue", "red", "nir", "mir". The dataset was used in the paper "Big Earth observation time series analysis for monitoring Brazilian agriculture" [@Picoli2018], and is available in the R package "sitsdata", which is downloadable from the website associated to the "e-sensing" project. The examples below use two out of six bands ("ndvi", "evi") for training and classification. In practice, we suggest that users include additionally at least the "nir" and "mir" bands.
 
 
 # Visualizing Samples 
@@ -70,7 +70,7 @@ One useful way of describing and understanding the samples is by plotting them. 
 ```{r}
 # Select a subset of the samples to be plotted
 # Retrieve the set of samples for the Mato Grosso region 
-samples_mt_4bands %>% 
+samples_matogrosso_mod13q1 %>% 
     sits_select(bands = "NDVI") %>% 
     dplyr::filter(label == "Forest") %>% 
     plot()
@@ -86,7 +86,7 @@ $$
 The function `sits_patterns` uses a GAM to predict a smooth, idealized approximation to the time series associated to the each label, for all bands. This function is based on the R package `dtwSat`[@Maus2019], which implements the TWDTW time series matching method described in @Maus2016. The resulting patterns can be viewed using `plot`. 
 ```{r}
 # Select a subset of the samples to be plotted
-samples_mt_4bands %>% 
+samples_matogrosso_mod13q1 %>% 
     sits_patterns() %>% 
     plot()
 ```
@@ -110,13 +110,13 @@ One of the advantages of the random forest model is that the classification perf
 ```{r, eval}
 # Retrieve the set of samples (provided by EMBRAPA) from the 
 # Mato Grosso region for train the Random Forest model.
-rfor_model <- sits_train(samples_mt_4bands, sits_rfor())
+rfor_model <- sits_train(samples_matogrosso_mod13q1, sits_rfor())
 # Classify using Random Forest model and plot the result
 point_mt_4bands <- sits_select(point_mt_6bands, bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_whittaker(lambda = 0.2, bands_suffix = "") %>% 
     sits_classify(rfor_model) %>% 
-    plot(bands = c("ndvi", "evi"))
+    plot(bands = c("NDVI", "EVI"))
 ```
 
 
@@ -139,14 +139,14 @@ In `sits`, SVM is implemented as a wrapper of `e1071` R package that uses the `L
 ```{r}
 # Train a machine learning model for the mato grosso dataset using SVM
 # The parameters are those of the "e1071:svm" method
-svm_model <- sits_train(samples_mt_4bands, 
+svm_model <- sits_train(samples_matogrosso_mod13q1, 
                         ml_method = sits_svm(kernel = "radial",
                                              cost = 10))
 # Classify using SVM model and plot the result
 class.tb <- point_mt_4bands %>% 
     sits_whittaker(lambda = 0.25, bands_suffix = "") %>% 
     sits_classify(svm_model) %>% 
-    plot(bands = c("ndvi", "evi"))
+    plot(bands = c("NDVI", "EVI"))
 
 ```
 
@@ -165,12 +165,12 @@ In SITS, the XGBoost method is implemented by the `sits_xbgoost()` function, whi
 ```{r}
 # Train a machine learning model for the mato grosso dataset using XGBOOST
 # The parameters are those of the "xgboost" package
-xgb_model <- sits_train(samples_mt_4bands, sits_xgboost())
+xgb_model <- sits_train(samples_matogrosso_mod13q1, sits_xgboost())
 # Classify using SVM model and plot the result
 class.tb <- point_mt_4bands %>% 
     sits_whittaker(lambda = 0.25, bands_suffix = "") %>% 
     sits_classify(xgb_model) %>% 
-    plot(bands = c("ndvi", "evi"))
+    plot(bands = c("NDVI", "EVI"))
 ```
 
 In general, the results from the extreme gradient boosting model are similar to the Random Forest model. However, for each specific study, users need to perform validation. See the function `sits_kfold_validate` for more details.
@@ -189,7 +189,8 @@ In the following example, we classify the same data set using an example of the 
 
 ```{r, warning = FALSE, message = FALSE}
 # train a machine learning model for the Mato Grosso data using an MLP
-mlp_model <- sits_train(samples_mt_4bands, sits_deeplearning(
+mlp_model <- sits_train(samples_matogrosso_mod13q1, 
+                        sits_deeplearning(
                         layers           = c(128, 128, 128),
                         activation       = "elu",
                         dropout_rates    = c(0.50, 0.40, 0.30),
@@ -205,6 +206,8 @@ plot(mlp_model)
 Then, we classify a 16-year time series using the DL model
 ```{r}
 # Classify using DL model and plot the result
+point_mt_4bands <- sits_select(point_mt_6bands, 
+                               bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_classify(mlp_model) %>% 
     plot(bands = c("ndvi", "evi"))
@@ -227,7 +230,7 @@ The `sits_FCN` function uses the architecture proposed by Wang as its default, a
 
 ```{r, warning = FALSE, message = FALSE}
 # train a machine learning model using deep learning
-fcn_model <- sits_train(samples_mt_4bands, 
+fcn_model <- sits_train(samples_matogrosso_mod13q1, 
                         sits_FCN(
                             layers           = c(64, 256, 64),
                             kernels          = c(8, 5, 3),
@@ -243,6 +246,8 @@ plot(fcn_model)
 Then, we classify a 16-year time series using the FCN model
 ```{r}
 # Classify using DL model and plot the result
+point_mt_4bands <- sits_select(point_mt_6bands, 
+                               bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_classify(fcn_model) %>% 
     plot(bands = c("ndvi", "evi"))
@@ -261,7 +266,9 @@ In SITS, the ResNet is implemented using the `sits_resnet` function. The default
 
 ```{r, warning = FALSE, message = FALSE}
 # train a machine learning model using ResNet
-resnet_model <- sits_train(samples_mt_4bands, 
+point_mt_4bands <- sits_select(point_mt_6bands, 
+                               bands = c("NDVI", "EVI", "NIR", "MIR"))
+resnet_model <- sits_train(samples_matogrosso_mod13q1, 
                        sits_ResNet(
                           blocks               = c(32, 64, 64),
                           kernels              = c(9, 7, 3),
@@ -277,9 +284,11 @@ plot(resnet_model)
 Then, we classify a 16-year time series using the DL model
 ```{r}
 # Classify using DL model and plot the result
+point_mt_4bands <- sits_select(point_mt_6bands, 
+                               bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_classify(resnet_model) %>% 
-    plot(bands = c("ndvi", "evi"))
+    plot(bands = c("NDVI", "EVI"))
 ```
 # Combined 1D CNN and multi-layer perceptron networks
 
@@ -295,7 +304,7 @@ The function `sits_tempCNN` implements the model, using the default parameters p
 
 ```{r, warning = FALSE, message = FALSE}
 # train a machine learning model using tempCNN
-tCNN_model <- sits_train(samples_mt_4bands, 
+tCNN_model <- sits_train(samples_matogrosso_mod13q1, 
                        sits_TempCNN(
                           cnn_layers           = c(32, 32, 32),
                           cnn_kernels          = c(5, 5, 5),
@@ -317,6 +326,8 @@ plot(tCNN_model)
 Then, we classify a 16-year time series using the DL model
 ```{r}
 # Classify using DL model and plot the result
+point_mt_4bands <- sits_select(point_mt_6bands, 
+                               bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_classify(tCNN_model) %>% 
     plot(bands = c("ndvi", "evi"))
@@ -335,7 +346,7 @@ knitr::include_graphics(system.file("extdata/markdown/figures", "lstm-cnn.png", 
 In the SITS package, the combined LSTM-CNN architecture is implemented by the `sits_LSTM_CNN` function. The default values are similar those proposed by @Karim2019b. The parameter `lstm_units` controls the number of units in the LSTM cell at every time step of the network. @Karim2019b proposes an LSTM with 8 units, each with a dropout rate of 80%, which are controlled by parameters `lstm_units` and `lstm_dropout`. In initial experiments, we got a better performance with an LSTM with 16 units. As proposed by @Karim2019b, the CNN layers have filter sizes of {128, 256, 128} and kernel convolution sizes of {8, 5, 3}, controled by the parameters `cnn_layers` and `cnn_kernels`. One should experiment with these parameters, and consider the simulations carried out by @Pelletier2019 (see above), where the authors found that an FCN network of sizes {64, 64, 64} with kernels sizes of {5, 5, 5} had best performance in their case study. In this example, the estimated accuracy of the model was 94.7%. 
 
 ```{r, message = FALSE, warning = FALSE}
-lstm_fcn_model <- sits_train(samples_mt_4bands, 
+lstm_fcn_model <- sits_train(samples_matogrosso_mod13q1, 
                        sits_LSTM_FCN(
                           lstm_units          = 16,
                           lstm_dropout        = 0.80,
@@ -354,6 +365,8 @@ plot(lstm_fcn_model)
 Then, we classify a 16-year time series using the DL model
 ```{r}
 # Classify using DL model and plot the result
+point_mt_4bands <- sits_select(point_mt_6bands, 
+                               bands = c("NDVI", "EVI", "NIR", "MIR"))
 class.tb <- point_mt_4bands %>% 
     sits_classify(lstm_fcn_model) %>% 
     plot(bands = c("ndvi", "evi"))
